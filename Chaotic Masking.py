@@ -1,5 +1,8 @@
 '''
 Chaotic Binary Shift Keying
+
+Author: Shashwat Shukla
+Date: 28th March 2018
 '''
 # Import libraries
 import numpy as np
@@ -10,20 +13,20 @@ from mpl_toolkits.mplot3d import Axes3D
 
 # The message signal being sent
 def m(t):
-	return 4 + 0.2 * (1 + signal.square(t / 10.0))
-	# return  4 + (t > 2000) * 0.4
+    # return (t > 10) * 1e-3 * signal.square(100 * t)
+    return (t > 10) * 1e-3 * np.sin(100 * t)
 
 # The Difference Equations governing the operation of the circuit
 def dH_dt(H, t=0):
-    return np.array([16 * (H[1] - H[0]), 45.6 * H[0] - H[1] - 20.0 * H[0] * H[2], 5 * H[0] * H[1] - m(t) * H[2],
-                     16 * (H[4] - H[3]), 45.6 * (H[0]) - H[4] - 20.0 * (H[0]) * H[5], 5 * (H[0]) * H[4] - 4 * H[5]])
+    return np.array([16 * (H[1] - H[0]), 45.6 * H[0] - H[1] - 20.0 * H[0] * H[2], 5 * H[0] * H[1] - 4 * H[2],
+                     16 * (H[4] - H[3]), 45.6 * (H[0] + m(t)) - H[4] - 20.0 * (H[0] + m(t)) * H[5], 5 * (H[0] + m(t)) * H[4] - 4 * H[5]])
 
 # Simulation Time Steps
-T = 300
+T = 20
 t = np.linspace(0, T, 1000 * T)
 
 # Initial conditions
-H0 = [0.7, 0.2, 0.3, 0.7, 0.0, 0.0]
+H0 = [3, 0.2, 0.3, 3, 0.0, 0.0]
 
 # Simulate the set of difference equations
 H, infodict = integrate.odeint(dH_dt, H0, t, full_output=True)
@@ -34,7 +37,7 @@ H, infodict = integrate.odeint(dH_dt, H0, t, full_output=True)
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 ax.plot(H[:, 0], H[:, 1], H[:, 2])
-plt.show()
+# plt.show()
 
 # Trajectory of the error vector
 fig = plt.figure()
@@ -42,17 +45,10 @@ ax = fig.add_subplot(111, projection='3d')
 ax.plot(H[:, 3] - H[:, 0], H[:, 4] - H[:, 1], H[:, 5] - H[:, 2])
 plt.show()
 
-
 # The transmitted signal
-plt.plot(t[:], m(t))
+plt.plot(t[12e3:14e3], m(t[12e3:14e3]))
 plt.show()
 
 # The recovered signal
-plt.plot(t[:], (H[:, 0] - H[:, 3]))
+plt.plot(t[12e3:14e3], (m(t[12e3:14e3]) + H[12e3:14e3, 0] - H[12e3:14e3, 3]))
 plt.show()
-# plt.plot(t[1e3:], 100 * (H[1e3:, 1] - H[1e3:, 4]))
-# plt.show()
-# plt.plot(t[1e3:], 100 * (H[1e3:, 2] - H[1e3:, 5]))
-# plt.show()
-# plt.plot(t[30e3:], 100 * (m(t[30e3:]) + H[30e3:, 0] - H[30e3:, 3] ))
-# plt.show()
